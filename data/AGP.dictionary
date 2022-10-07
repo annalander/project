@@ -1,0 +1,19 @@
+Dictionary for AGP Data
+
+ID - identification number for captured specimen
+date - data specimen was captured
+location - location/site specimen was captured
+traptype - type of trap specimen was captured in
+trapnumber - identification number of trap specimen was captured in
+critter - common name of captured specimen
+stage - life stage of specimen (larval or not larval)
+mass - weight of specimen in grams
+svl - snout vent length of captured specimen in millimeters
+recap - whether or not specimen was captured more than once
+tagnum - tag number of specimen if recapture
+notes - details concerning other aspects of specimen collection
+recent - IGNORE
+username - IGNORE
+lat - latitude of location where specimen was captured
+lon - longitude of location where specimen was captured
+
