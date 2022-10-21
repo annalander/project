@@ -1,0 +1,203 @@
+---
+title: "Project Two"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Due Oct. 21 at 11:59 PM. 
+
+For this first part of the exam, you can either use `surveys_complete.csv` or your own data. If you are using your own data, you must have data in which you think you have a numerical predictor variable and a numerical response variable. If you are using `surveys_complete`, you can use weight and hindfoot_length for this.
+
+Save this file in your `projects` directory. You can either save it in a project two subdirectory, or just put it in projects. Either way is fine.
+
+
+1) Load in your data. Which variable will you be using as a predictor, and which as a response? (5 pts)
+
+```{r}
+
+pjct2AGP <- read_csv("/cloud/project/data/AGP+field+data+copy.csv")
+pjct2AGP <- pjct2AGP %>% 
+  filter(mass > 0, svl > 0) %>% 
+  mutate(stage = gsub(" ", "", stage))
+
+```
+
+```
+The variable I will be using are mass and svl (snout vent lenght). I'm going to use snout-vent length as a predictor to larger mass. Generally speaking, a longer specimen may be heftier. 
+
+```
+
+2) Plot the two against each other with a scatter plot. Do the data appear to be related linearly? (5 pts)
+
+```{r}
+
+ggplot(data = pjct2AGP, mapping = aes(x = svl,y = mass)) + geom_point() + ylim(0,200) + xlim(0,200) + labs(x = "Snout-Vent Length (mm)", y = "Mass (g)")
+
+```
+
+```
+The data is not linear. There appears to be some variance in the mass of the specimen as the snout-vent length increases.  
+
+```
+
+
+3) Fit the linear model. View the summary. (5 pts)
+
+
+```{r}
+
+AGPmodel_fit <- lm(mass ~ svl, data = pjct2AGP)
+summary(AGPmodel_fit)
+
+```
+
+4) Does the summary make sense when you compare it to the plot you made? Does our model have good predictive power? Evaluate the residual standard error, intercept, and R-Squared in particular. Would you say your predictor predicts the response?  (10 pts)
+
+
+```
+The model and the graph worked well with each other. Visually, the plot shows it is not particulately linear. My R-squared value came in at below 0.4, suggesting low level of correlation between snout-vent length and mass of the specimen. Standard error is quite high at >25 with nearly 4000 degrees of freedom. My p-value is highly significant (2.2e-16). 
+
+```
+
+
+5) Plot the model on the graph. Increase the size of the text so it is comfortably readable at 5 feet. Make sure axis labels are readable and not overlapping with one another. (5 pts)
+
+```{r}
+
+ggplot(data = pjct2AGP, mapping = aes(x = svl, y = mass)) + geom_point() + geom_smooth(method = "lm") + annotate("text", x = 30, y = 150, label = "R^2 == 0.354", parse = T, size = 5) + ylim(0, 175) + xlim(0, 175)
+
+```
+
+
+6) Check the normality of the residuals. Do they look OK? Are we violating assumptions? (5 pts)
+
+```{r}
+
+broom::augment(AGPmodel_fit) -> augmented_AGPmodel_fit
+qqnorm(augmented_AGPmodel_fit$.resid)
+qqline(augmented_AGPmodel_fit$.resid, col = "green")
+
+```
+
+Why is normality of residuals important? 
+
+```
+Normal residuals suggest the predictor/response correlate well with one another and approproate assumptions can be made. 
+
+```
+
+7) If you are using `surveys_complete`: Is there interspecific variation in the linear model? Hint: look at our prior work with facet plots. (15 pts) 
+
+If you are *not* using  `surveys_complete`: Do you think there are groupings within your data that may have a separate linear model? Try grouping the data by that variable and redoing the lm. If this would not make sense for your data, you may also attempt to do multiple predictor variables. (15 pts)
+
+```{r}
+
+q7pjc2 <- pjct2AGP %>% 
+  group_by(date)
+q7pjc2 <- lm(mass ~ date, data = q7pjc2)
+summary(q7pjc2)
+
+
+```
+
+## Part Two
+
+In this portion, you are free to use your own data if you have a categorical predictor variable and a response variable. Otherwise, you may use the columns sex and weight in `surveys_complete`
+
+1) First, plot the data grouped by sex (5 pts)
+
+```{r}
+
+pjct2gb <- pjct2AGP %>% 
+  group_by(stage)
+
+ggplot(data = pjct2gb, mapping = aes(x = svl, y = mass, color = stage)) + geom_jitter() + ylim(0,175) + xlim(0,175) + labs(title = "Correlation of Life History Stage vs Body Size in Amphibians", x = "Snout-Vent Length (mm)", y = "Mass (g)")
+```
+
+2) Try an ANOVA of this data (5 pt)
+
+```{r}
+
+aov_agpP2 <- aov(svl ~ stage, data = pjct2gb)
+summary(aov_agpP2)
+
+ggplot(data = pjct2gb, mapping = aes(x = stage, y = svl, color = stage)) + geom_jitter() + labs(x = "Life Stage", y = "Snout-Vent Length (mm)") + ylim(0,200)
+
+```
+
+3) How about a linear model? What information does this give you that an ANOVA can't? (5 pts)
+
+
+```{r}
+
+lin_agpP2 <- lm(svl ~ stage, data = pjct2gb)
+summary(lin_agpP2)
+
+```
+
+```
+Linear model can give you correlation between multiple predictors, ANOVA can provide info between numerical and categorical.  Linear model also shows you how well the data correlates with each other. 
+
+```
+
+3) Plot the lm with the data, with points colored by sex. (10 pts)
+
+
+```{r}
+
+ggplot(data = pjct2gb, mapping = aes(x = svl, y = mass, color = stage)) + geom_point() + geom_smooth(method = "lm") + labs(x = "Snout-Vent Length (mm)", y = "Mass (g)") + ylim(0,200) + xlim(0,200)
+
+```
+
+4) Choose any model we've looked at so far, but use two predictor variables. Perform an LM, plot the results, and state if this changes your interpretation of the relationship between variables (10 pts)
+
+```{r}
+
+two_pred_agp <- lm(mass ~ stage + svl, data = pjct2AGP)
+summary(two_pred_agp)
+
+
+two_pred_aov <- aov(mass ~ svl + stage, data = pjct2gb)
+summary(two_pred_aov)
+
+```
+
+```{r}
+
+broom::augment(two_pred_agp) -> augmented_fit_agp
+qqnorm(augmented_fit_agp$.resid)
+qqline(augmented_fit_agp$.resid, col = "green")
+
+ggplot(data = pjct2gb, mapping = aes(x = svl , y = mass, color = stage)) + geom_jitter() + geom_smooth(method = "lm") + ylim(0,200) + xlim(0,200)
+
+```
+
+```
+
+It still appears that neither life history stage nor snout-vent length has much of an effect on the overall mass of amphibian species. This is likely due to the heavy presence of Tiger salamanders, which can either metamorphose or reach sexual maturation in larval body form. These organisms can often times grow larger if they stay in paedomorphic form. However, this data is still surprising given the amount of frogs and toads in this sample set. 
+
+```
+
+## Part Three
+
+
+1) Add and commit this document (5 pts)
+
+```
+
+
+
+```
+
+2) Push your changes to github (10 pts)
+
+```
+#Commands here
+```
+
+
+
+# MS students
+
+My expectation is that you'll do this with your own data. If any part of this doesn't make sense with your data, please get in touch ASAP so we can work it out.
